@@ -1,21 +1,32 @@
-const CACHE_NAME = 'horizontizer-cache-v1';
+const CACHE_NAME = 'horizontizer-cache-v2';
 
-// Add all the files your app needs to run offline (no icon and manifest)
+// All files the app needs to run offline (relative paths so the app
+// also works when served from a subdirectory).
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/style.css',        // CSS file
-  '/mySketch.js',      // JS file
-  '/beach.jpg',        // other files
-  'https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.js' //p5js lib
+  './',
+  './index.html',
+  './style.css',
+  './mySketch.js',
+  './beach.jpg',
+  './manifest.json',
+  './apple-touch-icon.png',
+  'https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.js' // p5js lib (opaque)
 ];
 
-// 1. Install Event: Cache all critical files
+// 1. Install Event: Cache all critical files.
+// cache.addAll() rejects if ANY request fails (e.g. the cross-origin
+// CDN response), which would break offline support entirely. Cache
+// each asset individually and tolerate individual failures instead.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('Caching app assets...');
-      return cache.addAll(ASSETS_TO_CACHE);
+      const requests = ASSETS_TO_CACHE.map((url) =>
+        cache.add(new Request(url, { mode: 'no-cors' })).catch((err) => {
+          console.warn('Failed to cache:', url, err);
+        })
+      );
+      return Promise.all(requests);
     }).then(() => self.skipWaiting()) // Force the waiting service worker to become active
   );
 });

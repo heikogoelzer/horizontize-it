@@ -106,6 +106,7 @@ function draw() {
 }
 
 function updateCanvas() {
+		if (!img_sub) { return; } // p5 may fire resize before setup() ran
 		let index = floor(map(hpos,0,1,nMargin,img_sub.width-nMargin));
 		img_disp = img_sub.get(index, 0, index+1, img_sub.height); // copy image for processing
 		img_disp.filter(BLUR, nblur);
@@ -115,8 +116,8 @@ function updateCanvas() {
 function handleInput(file) {
 	// Load and interpolate image.
   if (file.type === 'image') {
+		// updateCanvas() runs in the load callback, once the image is ready
 		img_org = loadImage(file.data, interpolateImage);
-		updateCanvas();
 	} else {
     img_org = null;
   }
@@ -144,6 +145,7 @@ function keyPressed() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 	updateCanvas();
+	if (!output) { return; } // GUI may not exist yet during early resize
 	let ow = output.size().width; // get button width
   output.position(windowWidth-ow-2, 0); // align right with window 
 }
