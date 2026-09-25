@@ -44,12 +44,13 @@ function setup() {
 
 function makeGUI() {
 	input = createFileInput(handleInput);
-  input.position(0, 0);
-	
+	input.class('ui-file');
+	// position set in layoutGUI()
+
 	lblpos = createP('position'); // relative x position into image [0,1]
-	lblpos.position(5, 25);
+	lblpos.class('ui-label');
 	slpos = createSlider(0, 1, 0.5, 0.01);
-	slpos.position(5, 60);
+	slpos.class('ui-slider');
 	// allow keyboard and mouse control
 	slpos.changed(function() {
 		hpos = slpos.value();
@@ -59,11 +60,11 @@ function makeGUI() {
 		hpos = slpos.value();
 		updateCanvas();
 	})
-	
+
 	lblblur = createP('blur');
-	lblblur.position(5, 75);
+	lblblur.class('ui-label');
 	slblur = createSlider(0, 10, 2, 1);
-	slblur.position(5, 110);
+	slblur.class('ui-slider');
 	slblur.changed(function() {
 		nblur = slblur.value();
 		updateCanvas();
@@ -72,9 +73,9 @@ function makeGUI() {
 		nblur = slblur.value();
 		updateCanvas();
 	})
-	
+
 	chkanimate = createCheckbox('animate', false);
-	chkanimate.position(5, 150);
+	chkanimate.class('ui-checkbox');
 	chkanimate.changed(function() {
 		//pick up current hpos phase
 		if (chkanimate.checked()) { 
@@ -89,9 +90,61 @@ function makeGUI() {
 	});
 
 	output = createButton('Save image');
-	let ow = output.size().width; // get button width
-  output.position(windowWidth-ow-2, 0); // align right with window 
-  output.mousePressed(saveImage);
+	output.class('ui-button');
+	output.mousePressed(saveImage);
+
+	layoutGUI();
+	hpos = slpos.value();
+	nblur = slblur.value();
+}
+
+function layoutGUI() {
+	// scale layout with screen width; u ~= 1% of width, clamped
+	let u = constrain(windowWidth / 100, 4, 10);
+	let x = u / 2;
+	let y = u / 4;
+
+	input.position(x, y);
+	y += input.size().height + u * 0.5;
+
+	lblpos.position(x, y);
+	y += lblpos.size().height;
+	slpos.position(x, y);
+	y += slpos.size().height + u * 0.5;
+
+	lblblur.position(x, y);
+	y += lblblur.size().height;
+	slblur.position(x, y);
+	y += slblur.size().height + u * 0.5;
+
+	chkanimate.position(x, y);
+
+	// align save button right with window
+	let ow = output.size().width;
+	output.position(windowWidth - ow - u / 4, u / 4);
+}
+
+function touchMoved() {
+	// sliders don't fire mouseMoved during touch-drag on iOS;
+	// p5 keeps the DOM slider value in sync, so just read it
+	if (!slpos || !slblur) { return true; }
+	if (touches.length === 0) { return true; }
+	let t = touches[0];
+	for (let sl of [slpos, slblur]) {
+		let p = sl.position();
+		let s = sl.size();
+		if (t.x >= p.x && t.x <= p.x + s.width &&
+				t.y >= p.y && t.y <= p.y + s.height) {
+			if (sl === slpos) {
+				hpos = slpos.value();
+			} else {
+				nblur = slblur.value();
+			}
+			updateCanvas();
+			break;
+		}
+	}
+	return true; // don't preventDefault — would cancel native slider drag
 }
 
 function draw() {
@@ -146,6 +199,5 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 	updateCanvas();
 	if (!output) { return; } // GUI may not exist yet during early resize
-	let ow = output.size().width; // get button width
-  output.position(windowWidth-ow-2, 0); // align right with window 
+	layoutGUI();
 }

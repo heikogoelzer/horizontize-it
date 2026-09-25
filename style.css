@@ -2,4 +2,45 @@ html,
 body {
 	margin: 0;
 	padding: 0;
+	/* p5 sizes canvas to windowWidth which can include the scrollbar
+	   area; prevent scrollbars from that 15px overflow */
+	overflow: hidden;
+}
+
+/* Control sizes scale with screen width (vw units, clamped) */
+
+.ui-file input {
+	font-size: clamp(14px, 3.5vw, 22px);
+}
+
+.ui-label {
+	font-size: clamp(14px, 3.5vw, 22px);
+	margin: 0;
+}
+
+.ui-slider {
+	width: clamp(120px, 40vw, 320px);
+}
+
+.ui-slider::-webkit-slider-thumb {
+	width: clamp(22px, 4.5vw, 34px);
+	height: clamp(22px, 4.5vw, 34px);
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.ui-slider::-moz-range-thumb {
+	width: clamp(22px, 4.5vw, 34px);
+	height: clamp(22px, 4.5vw, 34px);
+	border: none;
+}
+
+.ui-checkbox,
+.ui-checkbox label {
+	font-size: clamp(14px, 3.5vw, 22px);
+}
+
+.ui-button {
+	font-size: clamp(14px, 3.5vw, 22px);
+	padding: clamp(6px, 1.5vw, 12px) clamp(10px, 2.5vw, 20px);
 }

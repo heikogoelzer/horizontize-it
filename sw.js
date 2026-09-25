@@ -1,4 +1,4 @@
-const CACHE_NAME = 'horizontizer-cache-v2';
+const CACHE_NAME = 'horizontizer-cache-v3';
 
 // All files the app needs to run offline (relative paths so the app
 // also works when served from a subdirectory).
